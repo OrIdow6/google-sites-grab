@@ -238,7 +238,7 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   io.stdout:flush()
   
   if string.match(url["url"], "%?attredirects=0$") then
-   toCheck[string.gsub(url["url"], "%?attredirects=0$", "")] = true
+   urlsToCheck[string.gsub(url["url"], "%?attredirects=0$", "")] = true
   end
 
   if status_code >= 300 and status_code <= 399 then
