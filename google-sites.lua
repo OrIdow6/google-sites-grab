@@ -16,6 +16,8 @@ local abortgrab = false
 local discovered_a = {}
 local discovered_site = {}
 
+local urlsToCheck = {}
+
 for ignore in io.open("ignore-list", "r"):lines() do
   downloaded[ignore] = true
 end
@@ -161,6 +163,11 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
       check(urlparse.absolute(url, newurl))
     end
   end
+  
+  for toCheck, _ in pairs(urlsToCheck) do
+    check(toCheck)
+  end
+  urlsToCheck = {}
 
   if string.match(url, "^[^%?]+%?.*height=")
     or string.match(url, "^[^%?]+%?.*width=") then
@@ -229,6 +236,10 @@ wget.callbacks.httploop_result = function(url, err, http_stat)
   url_count = url_count + 1
   io.stdout:write(url_count .. "=" .. status_code .. " " .. url["url"] .. "  \n")
   io.stdout:flush()
+  
+  if string.match(url["url"], "%?attredirects=0$") then
+   toCheck[string.gsub(url["url"], "%?attredirects=0$", "")] = true
+  end
 
   if status_code >= 300 and status_code <= 399 then
     local newloc = urlparse.absolute(url["url"], http_stat["newloc"])
